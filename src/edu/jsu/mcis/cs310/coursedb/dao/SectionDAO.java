@@ -4,11 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import com.github.cliftonlabs.json_simple.JsonArray;
+import com.github.cliftonlabs.json_simple.JsonObject;
+
 
 public class SectionDAO {
     
-    // INSERT YOUR CODE HERE
-    
+ 
     private final DAOFactory daoFactory;
     
     SectionDAO(DAOFactory daoFactory) {
@@ -16,20 +18,28 @@ public class SectionDAO {
     }
     
     public String find(int termid, String subjectid, String num) {
+        JsonArray jsonArray = new JsonArray();
         
         String result = "[]";
-        
         PreparedStatement ps = null;
         ResultSet rs = null;
         ResultSetMetaData rsmd = null;
-        
+        Connection conn = null;
         try {
             
-            Connection conn = daoFactory.getConnection();
+             conn = daoFactory.getConnection();
             
             if (conn.isValid(0)) {
                 
-                // INSERT YOUR CODE HERE
+                String sql = "SELECT * FROM section WHERE termid = ? AND subjectid = ? AND NUM = ?";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, termid);
+                ps.setString(2, subjectid);
+                ps.setString(3, num);
+                
+                rs = ps.executeQuery();
+                
+                jsonArray = DAOUtility.getResultSetAsJson(rs);
                 
             }
             
@@ -41,10 +51,10 @@ public class SectionDAO {
             
             if (rs != null) { try { rs.close(); } catch (Exception e) { e.printStackTrace(); } }
             if (ps != null) { try { ps.close(); } catch (Exception e) { e.printStackTrace(); } }
-            
+            if (conn != null){ try { conn.close(); } catch (Exception e) { e.printStackTrace(); } }
         }
         
-        return result;
+        return jsonArray.toString();
         
     }
     
